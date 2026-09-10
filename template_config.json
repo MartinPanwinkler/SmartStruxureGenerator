@@ -1,0 +1,122 @@
+{
+  "group_by": ["asp", "module", "module_type"],
+  "box_row_spacing": 1,
+  "output_start_col": 2,
+  "output_sheet": "{asp}",
+  "document_header": {
+    "enabled": true,
+    "sheet": "ASP-301-1",
+    "range": "A1:N25",
+    "row_spacing_after": 1,
+    "cell_values": {
+      "A1": "{{DOKUMENTTITEL}}",
+      "E4": "{{NETZTEIL_MODUL_1}}",
+      "C6": "{{NETZTEIL_TEXT_1}}",
+      "E12": "{{NETZTEIL_MODUL_2}}",
+      "C14": "{{NETZTEIL_TEXT_2}}",
+      "E20": "{{AS_MODUL}}",
+      "J20": "IP:",
+      "C21": "{{ANLAGE}}",
+      "J21": "Version: {{AS_VERSION}}",
+      "C22": "{{AUTOMATION_SERVER}}",
+      "C23": "{{IP_ADRESSE}}",
+      "J23": "User: {{BENUTZER}}",
+      "C24": "{{SUBNETZMASKE}}",
+      "J24": "Passwort: {{PASSWORT}}"
+    }
+  },
+  "default_template": "io_16",
+  "template_mapping": {
+    "RTD-DI-16": "io_16",
+    "UI-16": "io_16",
+    "DI-16": "io_16",
+    "DI": "io_16",
+    "AI": "io_16",
+    "AO-V-8": "io_8",
+    "DO-FC-8": "io_8",
+    "AO": "io_8",
+    "DO-FA-12": "io_12",
+    "UI-8.AO-V-4": "io_12",
+    "DO": "io_12"
+  },
+  "templates": {
+    "io_16": {
+      "sheet": "ASP-301-1",
+      "range": "B27:M36",
+      "header_cells": {
+        "module_header": ["F27", "M27"]
+      },
+      "header_formats": {
+        "module_header": "{module}"
+      },
+      "preserve_template_fields": ["channel"],
+      "max_channels": 16,
+      "data_slots": [
+        {"channel": "B28", "description": "C28"},
+        {"channel": "B29", "description": "C29"},
+        {"channel": "B30", "description": "C30"},
+        {"channel": "B31", "description": "C31"},
+        {"channel": "B32", "description": "C32"},
+        {"channel": "B33", "description": "C33"},
+        {"channel": "B34", "description": "C34"},
+        {"channel": "B35", "description": "C35"},
+        {"channel": "I28", "description": "J28"},
+        {"channel": "I29", "description": "J29"},
+        {"channel": "I30", "description": "J30"},
+        {"channel": "I31", "description": "J31"},
+        {"channel": "I32", "description": "J32"},
+        {"channel": "I33", "description": "J33"},
+        {"channel": "I34", "description": "J34"},
+        {"channel": "I35", "description": "J35"}
+      ]
+    },
+    "io_8": {
+      "sheet": "ASP-301-1",
+      "range": "B93:M98",
+      "header_cells": {
+        "module_header": ["F93", "M93"]
+      },
+      "header_formats": {
+        "module_header": "{module}"
+      },
+      "preserve_template_fields": ["channel"],
+      "max_channels": 8,
+      "data_slots": [
+        {"channel": "B94", "description": "C94"},
+        {"channel": "B95", "description": "C95"},
+        {"channel": "B96", "description": "C96"},
+        {"channel": "B97", "description": "C97"},
+        {"channel": "I94", "description": "J94"},
+        {"channel": "I95", "description": "J95"},
+        {"channel": "I96", "description": "J96"},
+        {"channel": "I97", "description": "J97"}
+      ]
+    },
+    "io_12": {
+      "sheet": "ASP-301-1",
+      "range": "B178:M185",
+      "header_cells": {
+        "module_header": ["F178", "M178"]
+      },
+      "header_formats": {
+        "module_header": "{module}"
+      },
+      "preserve_template_fields": ["channel"],
+      "max_channels": 12,
+      "data_slots": [
+        {"channel": "B179", "description": "C179"},
+        {"channel": "B180", "description": "C180"},
+        {"channel": "B181", "description": "C181"},
+        {"channel": "B182", "description": "C182"},
+        {"channel": "B183", "description": "C183"},
+        {"channel": "B184", "description": "C184"},
+        {"channel": "I179", "description": "J179"},
+        {"channel": "I180", "description": "J180"},
+        {"channel": "I181", "description": "J181"},
+        {"channel": "I182", "description": "J182"},
+        {"channel": "I183", "description": "J183"},
+        {"channel": "I184", "description": "J184"}
+      ]
+    }
+  }
+}
