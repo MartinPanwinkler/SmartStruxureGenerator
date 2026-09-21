@@ -1,0 +1,40 @@
+name: Publish Existing Windows Artifact
+
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: "Run-ID des erfolgreichen Windows-Builds"
+        required: true
+        type: string
+      tag:
+        description: "Vorhandener Release-Tag"
+        required: true
+        default: "v0.1.0"
+        type: string
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Windows-Artefakt herunterladen
+        uses: actions/download-artifact@v4
+        with:
+          name: SmartStruxure_Beschriftungsgenerator-Windows
+          path: release-files
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: ${{ inputs.run_id }}
+
+      - name: EXE hochladen und Release veröffentlichen
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: |
+          gh release upload "$RELEASE_TAG" release-files/SmartStruxure_Beschriftungsgenerator.exe --clobber
+          gh release edit "$RELEASE_TAG" --draft=false
