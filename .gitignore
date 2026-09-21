@@ -4,6 +4,7 @@ __pycache__/
 .venv/
 build/
 dist/
+windows-build/
 .venv/
 build/
 dist/
