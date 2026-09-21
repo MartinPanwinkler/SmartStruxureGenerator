@@ -121,6 +121,12 @@ Anschließend `linux_test.xlsx` mit LibreOffice Calc oder Microsoft Excel öffne
 
 Die Logdatei liegt unter `logs/app.log`. Die Masterdatei wird nur gelesen und nie gespeichert.
 
+In der kompilierten Windows-Version liegt die Logdatei dauerhaft unter:
+
+```text
+%LOCALAPPDATA%\SmartStruxureGenerator\logs\app.log
+```
+
 ## Template-Konfiguration
 
 Alle unsicheren fachlichen Positionen stehen in `template_config.json`:

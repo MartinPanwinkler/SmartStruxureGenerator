@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import sys
 from pathlib import Path
 from typing import Any
@@ -9,9 +10,21 @@ from typing import Any
 
 APP_NAME = "SmartStruxure Beschriftungsgenerator"
 ROOT_DIR = Path(__file__).resolve().parent
-LOG_DIR = ROOT_DIR / "logs"
 GROUP_BY = ["asp", "module", "module_type"]
 BOX_ROW_SPACING = 2
+
+
+def _app_data_dir() -> Path:
+    if getattr(sys, "frozen", False):
+        if sys.platform == "win32" and os.environ.get("LOCALAPPDATA"):
+            return Path(os.environ["LOCALAPPDATA"]) / "SmartStruxureGenerator"
+        state_home = os.environ.get("XDG_STATE_HOME")
+        return Path(state_home) / "smartstruxure-generator" if state_home else Path.home() / ".smartstruxure-generator"
+    return ROOT_DIR
+
+
+APP_DATA_DIR = _app_data_dir()
+LOG_DIR = APP_DATA_DIR / "logs"
 
 
 def resource_path(relative: str | Path) -> Path:

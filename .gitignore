@@ -11,5 +11,6 @@ dist/
 logs/*.log
 template_analysis.json
 mapping_profiles.json
+.~lock.*#
 __pycache__/
 .pytest_cache/

@@ -12,7 +12,7 @@ import uuid
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
-from config import APP_NAME, DEFAULT_CONFIG, DEFAULT_TEMPLATE, ROOT_DIR, load_json_config
+from config import APP_DATA_DIR, APP_NAME, DEFAULT_CONFIG, DEFAULT_TEMPLATE, load_json_config
 from excel_reader import list_sheets, load_source_file
 from generator import generate_workbook
 from mapping import detect_columns, normalize_data
@@ -73,8 +73,7 @@ class SmartStruxureApp(ttk.Frame):
         self.progress_var = tk.IntVar()
         self.source_table: SourceTable | None = None
         self.column_mapping: dict[str, str] = {}
-        profile_root = Path(sys.executable).resolve().parent if getattr(sys, "frozen", False) else ROOT_DIR
-        self.profiles_path = profile_root / "mapping_profiles.json"
+        self.profiles_path = APP_DATA_DIR / "mapping_profiles.json"
         self._build()
 
     def _build(self) -> None:
@@ -170,7 +169,6 @@ class SmartStruxureApp(ttk.Frame):
     def _load_mapping_profile(self, headers: list[str]) -> dict[str, str] | None:
         if not self.profiles_path.exists():
             return None
-        replace_existing = False
         try:
             profiles = json.loads(self.profiles_path.read_text(encoding="utf-8"))
             profile = profiles.get(self._profile_key(headers))
@@ -205,6 +203,7 @@ class SmartStruxureApp(ttk.Frame):
         if not self.output_var.get().strip():
             messagebox.showerror("Fehler", "Bitte einen Speicherort auswählen.")
             return
+        replace_existing = False
         try:
             if master.resolve() == output.resolve():
                 messagebox.showerror("Fehler", "Die Master-Vorlage darf nicht überschrieben werden.")
