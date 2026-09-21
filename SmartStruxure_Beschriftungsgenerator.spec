@@ -1,8 +1,9 @@
 # -*- mode: python ; coding: utf-8 -*-
 from pathlib import Path
+from PyInstaller.utils.hooks import collect_data_files
 
 project = Path(SPECPATH)
-datas = [(str(project / "template_config.json"), ".")]
+datas = [(str(project / "template_config.json"), "."), *collect_data_files("tkinterdnd2")]
 template = project / "templates" / "Beschriftung SmartStruxure ERR.xlsx"
 if template.exists():
     datas.append((str(template), "templates"))

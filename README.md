@@ -114,6 +114,7 @@ Anschließend `linux_test.xlsx` mit LibreOffice Calc oder Microsoft Excel öffne
 ## Benutzung
 
 1. Rohdatei auswählen. Bei Excel-Dateien kann anschließend das Tabellenblatt gewählt werden.
+   Alternativ die `.xlsx`-, `.xlsm`- oder `.csv`-Datei auf das Drag-and-drop-Feld ziehen.
 2. Master-Vorlage auswählen.
 3. Ausgabepfad festlegen. Eine vorhandene Datei wird aus Sicherheitsgründen nicht überschrieben.
 4. Die Vorschau und automatische Spaltenerkennung prüfen. Fehlende oder falsche Felder über **Spalten zuordnen** korrigieren. Die Zuordnung kann für dieselbe Spaltenstruktur gespeichert werden.

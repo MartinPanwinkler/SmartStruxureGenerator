@@ -12,6 +12,12 @@ import uuid
 from pathlib import Path
 from tkinter import filedialog, messagebox, ttk
 
+try:
+    from tkinterdnd2 import DND_FILES, TkinterDnD
+except ImportError:  # GUI bleibt auch ohne optionale Drag-and-drop-Bibliothek startbar.
+    DND_FILES = None
+    TkinterDnD = None
+
 from config import APP_DATA_DIR, APP_NAME, DEFAULT_CONFIG, DEFAULT_TEMPLATE, load_json_config
 from excel_reader import list_sheets, load_source_file
 from generator import generate_workbook
@@ -87,40 +93,87 @@ class SmartStruxureApp(ttk.Frame):
             ("Ausgabedatei", self.output_var, self.choose_output, "Speicherort auswählen"),
         ]):
             ttk.Label(self, text=label).grid(row=row, column=0, sticky="w", pady=4)
-            ttk.Entry(self, textvariable=variable).grid(row=row, column=1, sticky="ew", padx=8)
+            entry = ttk.Entry(self, textvariable=variable)
+            entry.grid(row=row, column=1, sticky="ew", padx=8)
+            if row == 0:
+                self.source_entry = entry
             ttk.Button(self, text=button, command=command).grid(row=row, column=2, sticky="ew")
-        ttk.Label(self, text="Tabellenblatt").grid(row=3, column=0, sticky="w", pady=4)
+        self.drop_label = tk.Label(
+            self,
+            text="Excel- oder CSV-Rohdatei hierher ziehen",
+            relief="ridge",
+            borderwidth=2,
+            padx=12,
+            pady=10,
+            bg="#f3f6fa",
+            fg="#334155",
+        )
+        self.drop_label.grid(row=3, column=0, columnspan=3, sticky="ew", pady=(8, 10))
+        self._configure_drag_drop()
+        ttk.Label(self, text="Tabellenblatt").grid(row=4, column=0, sticky="w", pady=4)
         self.sheet_box = ttk.Combobox(self, textvariable=self.sheet_var, state="readonly")
-        self.sheet_box.grid(row=3, column=1, sticky="ew", padx=8)
+        self.sheet_box.grid(row=4, column=1, sticky="ew", padx=8)
         self.sheet_box.bind("<<ComboboxSelected>>", lambda _: self.load_source())
-        ttk.Button(self, text="Zuordnung (nur Fremdformat)", command=self.configure_mapping).grid(row=3, column=2, sticky="ew")
+        ttk.Button(self, text="Zuordnung (nur Fremdformat)", command=self.configure_mapping).grid(row=4, column=2, sticky="ew")
         self.preview = ttk.Treeview(self, show="headings", height=16)
-        self.preview.grid(row=4, column=0, columnspan=3, sticky="nsew", pady=(12, 6))
+        self.preview.grid(row=5, column=0, columnspan=3, sticky="nsew", pady=(12, 6))
         preview_scroll = ttk.Scrollbar(self, orient="horizontal", command=self.preview.xview)
-        preview_scroll.grid(row=5, column=0, columnspan=3, sticky="ew")
+        preview_scroll.grid(row=6, column=0, columnspan=3, sticky="ew")
         self.preview.configure(xscrollcommand=preview_scroll.set)
         self.generate_button = ttk.Button(self, text="Beschriftung generieren", command=self.start_generation)
-        self.generate_button.grid(row=6, column=0, columnspan=3, sticky="ew", pady=12, ipady=8)
-        ttk.Progressbar(self, variable=self.progress_var, maximum=100).grid(row=7, column=0, columnspan=3, sticky="ew")
-        ttk.Label(self, textvariable=self.status_var, wraplength=900).grid(row=8, column=0, columnspan=2, sticky="w", pady=8)
-        ttk.Button(self, text="Ordner öffnen", command=self.open_output_folder).grid(row=8, column=2, sticky="e")
+        self.generate_button.grid(row=7, column=0, columnspan=3, sticky="ew", pady=12, ipady=8)
+        ttk.Progressbar(self, variable=self.progress_var, maximum=100).grid(row=8, column=0, columnspan=3, sticky="ew")
+        ttk.Label(self, textvariable=self.status_var, wraplength=900).grid(row=9, column=0, columnspan=2, sticky="w", pady=8)
+        ttk.Button(self, text="Ordner öffnen", command=self.open_output_folder).grid(row=9, column=2, sticky="e")
         self.columnconfigure(1, weight=1)
-        self.rowconfigure(4, weight=1)
+        self.rowconfigure(5, weight=1)
+
+    def _configure_drag_drop(self) -> None:
+        if DND_FILES is None or not hasattr(self.drop_label, "drop_target_register"):
+            self.drop_label.configure(text="Drag-and-drop nicht verfügbar – bitte Rohdatei auswählen")
+            return
+        for widget in (self.drop_label, self.source_entry):
+            widget.drop_target_register(DND_FILES)
+            widget.dnd_bind("<<Drop>>", self._on_source_drop)
+        self.drop_label.dnd_bind("<<DragEnter>>", lambda _event: self.drop_label.configure(bg="#dbeafe"))
+        self.drop_label.dnd_bind("<<DragLeave>>", lambda _event: self.drop_label.configure(bg="#f3f6fa"))
+
+    def _on_source_drop(self, event: object) -> str:
+        self.drop_label.configure(bg="#f3f6fa")
+        data = getattr(event, "data", "")
+        try:
+            paths = [Path(value) for value in self.master.tk.splitlist(data)]
+        except tk.TclError:
+            paths = []
+        if len(paths) != 1:
+            messagebox.showerror("Fehler", "Bitte genau eine Rohdatei ablegen.")
+            return "break"
+        self._set_source_file(paths[0])
+        return "copy"
 
     def choose_source(self) -> None:
         value = filedialog.askopenfilename(filetypes=[("Rohdaten", "*.xlsx *.xlsm *.csv"), ("Alle Dateien", "*.*")])
         if value:
-            self.source_var.set(value)
-            default_output = Path(value).with_name(f"{Path(value).stem}_Beschriftung.xlsx")
-            self.output_var.set(str(default_output))
-            try:
-                sheets = list_sheets(Path(value))
-                self.sheet_box["values"] = sheets
-                preferred = next((name for name in sheets if "_DP" in name.upper()), sheets[0] if sheets else "")
-                self.sheet_var.set(preferred)
-                self.load_source()
-            except Exception as exc:
-                self._error(exc)
+            self._set_source_file(Path(value))
+
+    def _set_source_file(self, path: Path) -> None:
+        if not path.is_file():
+            messagebox.showerror("Fehler", f"Die abgelegte Datei wurde nicht gefunden:\n{path}")
+            return
+        if path.suffix.lower() not in {".xlsx", ".xlsm", ".csv"}:
+            messagebox.showerror("Fehler", "Unterstützt werden nur .xlsx-, .xlsm- und .csv-Dateien.")
+            return
+        self.source_var.set(str(path))
+        self.output_var.set(str(path.with_name(f"{path.stem}_Beschriftung.xlsx")))
+        try:
+            sheets = list_sheets(path)
+            self.sheet_box["values"] = sheets
+            preferred = next((name for name in sheets if "_DP" in name.upper()), sheets[0] if sheets else "")
+            self.sheet_var.set(preferred)
+            self.load_source()
+            self.drop_label.configure(text=f"Geladen: {path.name}")
+        except Exception as exc:
+            self._error(exc)
 
     def choose_template(self) -> None:
         value = filedialog.askopenfilename(filetypes=[("Excel-Vorlage", "*.xlsx *.xlsm")])
@@ -284,6 +337,6 @@ class SmartStruxureApp(ttk.Frame):
 
 
 def run_gui() -> None:
-    root = tk.Tk()
+    root = TkinterDnD.Tk() if TkinterDnD is not None else tk.Tk()
     SmartStruxureApp(root)
     root.mainloop()
