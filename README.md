@@ -1,34 +1,34 @@
-# SmartStruxure Beschriftungsgenerator
+# SmartStruxure Beschriftungsmaker (Dat Design is nich so doll)
 
-Das Projekt erzeugt formatierte Excel-Beschriftungen aus `.xlsx`-, `.xlsm`- oder `.csv`-Rohdaten. Ein Kästchen wird dabei als kompletter rechteckiger Block behandelt. Zellwerte, Styles, Rahmen, Merges, Zeilenhöhen und Spaltenbreiten werden aus einer Masterdatei kopiert und anschließend mit Rohdaten befüllt.
+Dat Projekt maakt formatteerte Excel-Beschriftungen ut `.xlsx`-, `.xlsm`- oder `.csv`-Rohdaten. Een Kästchen warrt dorbi as kumplett rechteckig Block behannelt. Zellweerte, Stil, Rahmen, Merges, Riegenhöhen un Spaltenbreden warrt ut een Masterdatei kopeert un denn mit Rohdaten füllt.
 
-## Ergebnis der Referenzanalyse
+## Resultat vun de Referenzanalyse
 
-Die Masterdatei liegt unter:
+De Masterdatei liggt hier:
 
 ```text
 templates/Beschriftung SmartStruxure ERR.xlsx
 ```
 
-Der vollständige Analysebericht lässt sich jederzeit neu erzeugen:
+De kumplette Analysebericht kann jümmers nee maakt warrn:
 
 ```bash
 python inspect_template.py "templates/Beschriftung SmartStruxure ERR.xlsx" --json template_analysis.json
 ```
 
-Das Blatt `ASP-301-1` enthält 33 visuelle Bereiche. Die eigentlichen wiederkehrenden Modulbeschriftungen beginnen ab Zeile 27. Die Referenz verwendet drei Geometrien:
+Dat Blatt `ASP-301-1` hett 33 visuelle Bereiche. De eegentlichen wedderkehrenden Modulbeschriftungen fangt af Rieg 27 an. De Referenz bruukt dree Geometrien:
 
-- 16 Kanäle: `B27:M36`, zweispaltig als 8 + 8 Kanäle
-- 8 Kanäle: `B93:M98`, zweispaltig als 4 + 4 Kanäle
-- 12 Kanäle: `B178:M185`, zweispaltig als 6 + 6 Kanäle
+- 16 Kanäle: `B27:M36`, twospaltig as 8 + 8 Kanäle
+- 8 Kanäle: `B93:M98`, twospaltig as 4 + 4 Kanäle
+- 12 Kanäle: `B178:M185`, twospaltig as 6 + 6 Kanäle
 
-Die Datenblätter `ASP-301-1_DP` und `ASP0303_DP (2)` enthalten die Datenpunktlisten, sind aber selbst keine Beschriftungsvorlagen. `template_config.json` verwendet deshalb ausschließlich bestätigte Blöcke aus `ASP-301-1`. Jeder Kanal besitzt dort explizite Zielzellen in `data_slots`; dadurch bleibt das zweispaltige Layout erhalten. Das Analyseskript gibt zusätzlich Merges, Maße und Zellinhalte aus.
+De Datenblätter `ASP-301-1_DP` un `ASP0303_DP (2)` hebbt de Datenpunktlisten, sünd aver sülvst keen Beschriftungsvorlagen. `template_config.json` bruukt dorüm blots bestätigte Blöck ut `ASP-301-1`. Jeder Kanal hett dor explizite Zielzellen in `data_slots`; dorüm blifft dat twospaltige Layout erhalten. Dat Analyseskript gifft zusätzlich Merges, Maße un Zellinhalten ut.
 
-Dieses SmartStruxure-Exportformat wird automatisch erkannt. Dabei gelten die festen Bedeutungen aus den Referenzblättern: B = Typ, C = Modul beziehungsweise Datenpunkt, D = Beschreibung, E = Modulnummer, F = Kanal und G = Quelle. Modulzeilen und Datenpunktzeilen werden automatisch unterschieden. Eine manuelle Spaltenzuordnung ist dafür nicht erforderlich; sie bleibt nur als Fallback für abweichende normale Tabellen oder CSV-Dateien verfügbar.
+Dit SmartStruxure-Exportformat warrt automaatsch erkannt. Dorbi gellt de fasten Bedüden ut de Referenzblätter: B = Typ, C = Modul bzw. Datenpunkt, D = Beschrievung, E = Modulnummer, F = Kanal un G = Quelle. Modulriejen un Datenpunktriejen warrt automaatsch ünnerscheedt. Een manuelle Spaltenzutoordnung is dorför nich nödig; se blifft blots as Fallback för afwiekende normale Tabellen oder CSV-Dateien verföögbar.
 
-### Dokumentkopf und manuelle Platzhalter
+### Dokumentkopp un manuelle Platzholler
 
-Vor den I/O-Kästchen wird der Originalbereich `A1:N25` vollständig kopiert. Er enthält die beiden Spannungsversorgungsbereiche und den Automation-Server-Block. Projektspezifische Inhalte werden bewusst nicht aus einer alten Vorlage übernommen, sondern als direkt in Excel editierbare Platzhalter ausgegeben:
+Vör de I/O-Kästchen warrt de Originalbereich `A1:N25` kumplett kopeert. He hett de beiden Spannungsversorgungsbereiche un den Automation-Server-Block. Projektspezifische Inhalte warrt bewusst nich ut een ole Vorlage övernahmen, sonnern as direkt in Excel editeerbare Platzholler utggeven:
 
 ```text
 {{DOKUMENTTITEL}}
@@ -46,11 +46,11 @@ Vor den I/O-Kästchen wird der Originalbereich `A1:N25` vollständig kopiert. Er
 {{PASSWORT}}
 ```
 
-Die Platzhalter bleiben normale Excel-Zelltexte und können nach der Generierung manuell überschrieben werden. Ihre Positionen stehen zentral unter `document_header.cell_values` in `template_config.json`.
+De Platzholler blievt normale Excel-Zelltexte un köönt na de Generierung manuell överschreven warrn. Jemehr Positschonen staht zentral ünner `document_header.cell_values` in `template_config.json`.
 
-## Installation für Entwickler
+## Installation för Entwickler
 
-Empfohlen ist Python 3.11 oder 3.12. Unter Linux:
+Empfohlen is Python 3.11 oder 3.12. Ünner Linux:
 
 ```bash
 python3 -m venv .venv
@@ -59,20 +59,20 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-Mit der Fish-Shell wird das dafür vorgesehene Aktivierungsskript verwendet:
+Mit de Fish-Shell warrt dat dorvör vörsehn Aktivierungsskript bruukt:
 
 ```fish
 source .venv/bin/activate.fish
 python main.py
 ```
 
-Ganz ohne Aktivierung funktioniert auch:
+Ganz ahn Aktivierung geiht ok:
 
 ```bash
 .venv/bin/python main.py
 ```
 
-Unter Windows (PowerShell):
+Ünner Windows (PowerShell):
 
 ```powershell
 py -3.12 -m venv .venv
@@ -81,7 +81,7 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-Für die GUI muss Tkinter vorhanden sein. Prüfen:
+För de GUI mutt Tkinter dor ween. Prüfen:
 
 ```bash
 python -c "import tkinter; print(tkinter.TkVersion)"
@@ -99,9 +99,9 @@ Arch Linux/CachyOS:
 sudo pacman -S tk
 ```
 
-Danach die virtuelle Umgebung gegebenenfalls neu erstellen. Auf dem während der Entwicklung verwendeten Linux-System fehlte `libtk8.6.so`; Kernlogik und Tests funktionieren davon unabhängig.
+Denn de virtuelle Ümgebung gegevenenfalls nee maken. Op dat während de Entwicklung bruukte Linux-System fehl `libtk8.6.so`; Kernlogik un Tests loopt dorvun unafhängig.
 
-### Unter Linux ohne GUI testen
+### Ünner Linux ahn GUI testen
 
 ```bash
 source .venv/bin/activate
@@ -109,20 +109,20 @@ python cli.py example_input.xlsx linux_test.xlsx \
   --template "templates/Beschriftung SmartStruxure ERR.xlsx"
 ```
 
-Anschließend `linux_test.xlsx` mit LibreOffice Calc oder Microsoft Excel öffnen. Eine bereits vorhandene Ausgabedatei wird absichtlich nicht überschrieben. Vor einem erneuten Test entweder einen neuen Namen verwenden oder die alte Testdatei bewusst entfernen.
+Denn `linux_test.xlsx` mit LibreOffice Calc oder Microsoft Excel open maken. Een al vörhannen Utgavedatei warrt mit Afsicht nich överschreven. Vör een neen Test entweder een neen Naam bruken oder de ole Testdatei bewusst wegdoon.
 
-## Benutzung
+## Bruuk
 
-1. Rohdatei auswählen. Bei Excel-Dateien kann anschließend das Tabellenblatt gewählt werden.
-   Alternativ die `.xlsx`-, `.xlsm`- oder `.csv`-Datei auf das Drag-and-drop-Feld ziehen.
-2. Master-Vorlage auswählen.
-3. Ausgabepfad festlegen. Eine vorhandene Datei wird aus Sicherheitsgründen nicht überschrieben.
-4. Die Vorschau und automatische Spaltenerkennung prüfen. Fehlende oder falsche Felder über **Spalten zuordnen** korrigieren. Die Zuordnung kann für dieselbe Spaltenstruktur gespeichert werden.
-5. **Beschriftung generieren** wählen.
+1. Rohdatei utwählen. Bi Excel-Dateien kann denn dat Tabellenblatt wählt warrn.
+   Alternativ de `.xlsx`-, `.xlsm`- oder `.csv`-Datei op dat Drag-and-drop-Feld trecken.
+2. Master-Vorlage utwählen.
+3. Utgaveweg fastleggen. Een vörhannen Datei warrt ut Sicherheitsgrünnen nich överschreven.
+4. De Vörschau un automaatsche Spaltenerkennung prüfen. Fehlende oder falsche Felder över **Spalten toordnen** korrigeren. De Toordnung kann för desülve Spaltenstruktur spiekert warrn.
+5. **Beschriftung genereren** wählen.
 
-Die Logdatei liegt unter `logs/app.log`. Die Masterdatei wird nur gelesen und nie gespeichert.
+De Logdatei liggt ünner `logs/app.log`. De Masterdatei warrt blots leest un nie spiekert.
 
-In der kompilierten Windows-Version liegt die Logdatei dauerhaft unter:
+In de kompileerte Windows-Version liggt de Logdatei duurhaft ünner:
 
 ```text
 %LOCALAPPDATA%\SmartStruxureGenerator\logs\app.log
@@ -130,7 +130,7 @@ In der kompilierten Windows-Version liegt die Logdatei dauerhaft unter:
 
 ## Template-Konfiguration
 
-Alle unsicheren fachlichen Positionen stehen in `template_config.json`:
+All unsichere fachliche Positschonen staht in `template_config.json`:
 
 ```json
 {
@@ -154,54 +154,54 @@ Alle unsicheren fachlichen Positionen stehen in `template_config.json`:
 }
 ```
 
-- `range` ist der vollständig zu kopierende Masterblock.
-- `header_cells` enthält absolute Zelladressen innerhalb dieses Masterblocks.
-- `data_start_row` ist die absolute erste Datenzeile im Masterblatt.
-- `max_channels` steuert die Aufteilung. 24 Datensätze bei 16 Kanälen ergeben 16 + 8.
-- `data_slots` ordnet bei den analysierten zweispaltigen Vorlagen jeden Kanal expliziten Zielzellen zu.
-- `preserve_template_fields` lässt feste Inhalte wie die gedruckten Kanalnummern `01` bis `16` unverändert aus der Mastervorlage stehen.
-- `columns` steht weiterhin für einfache einspaltige Vorlagen zur Verfügung.
-- `template_mapping` ordnet Werte aus `Modultyp` einem Template zu.
-- `default_template` wird verwendet, wenn kein spezielles Mapping passt.
-- `group_by` bestimmt, bei welchem Feldwechsel ein neues logisches Modul entsteht.
-- `box_row_spacing` bestimmt die Leerzeilen zwischen den kopierten Blöcken.
+- `range` is de kumplett to kopeerende Masterblock.
+- `header_cells` hett absolute Zelladressen binnen dissen Masterblock.
+- `data_start_row` is de absolute eerste Datenrieg in’t Masterblatt.
+- `max_channels` stüert de Opdeelung. 24 Datensätz bi 16 Kanälen gifft 16 + 8.
+- `data_slots` ordent bi de analyseerten twospaltigen Vorlagen jeden Kanal expliziten Zielzellen to.
+- `preserve_template_fields` lett fasten Inhalte as de druckten Kanalnummern `01` bis `16` unverännert ut de Mastervorlage stahn.
+- `columns` steiht wieder för eenfache eenspaltige Vorlagen to Verfügung.
+- `template_mapping` ordent Weerte ut `Modultyp` een Template to.
+- `default_template` warrt bruukt, wenn keen speziell Mapping passt.
+- `group_by` bestimmt, bi welk Feldwessel een nee logisch Modul entsteiht.
+- `box_row_spacing` bestimmt de leddigen Riegen twüschen de kopeerten Blöck.
 
-Vorhandene `{{ASP}}`-, `{{MODULE}}`- oder andere Platzhalter in Textzellen werden ersetzt. Alternativ funktionieren die expliziten Angaben in `header_cells` und `columns` auch ohne Platzhalter in der Vorlage.
+Vörhannen `{{ASP}}`-, `{{MODULE}}`- oder annere Platzholler in Textzellen warrt ersett. Alternativ funktioneert de expliziten Angaven in `header_cells` un `columns` ok ahn Platzholler in de Vorlage.
 
-Ein neuer Kästchentyp wird ergänzt, indem ein weiterer Eintrag unter `templates` angelegt und unter `template_mapping` einem Modultyp zugeordnet wird. Python-Code muss dafür nicht geändert werden.
+Een neen Kästchentyp warrt ergänzt, indem een wieder Inrag ünner `templates` anleggt un ünner `template_mapping` een Modultyp toordent warrt. Python-Code mutt dorför nich ännert warrn.
 
 ## CSV-Dateien
 
-Der Leser erkennt die Trennzeichen Semikolon, Komma, Tabulator und Pipe. Bei der Zeichenkodierung werden UTF-8 mit und ohne BOM, Windows-1252 und Latin-1 geprüft. Excel-Werte werden als Werte eingelesen; Formeln in Rohdaten werden nicht berechnet.
+De Leser erkennt de Trenntekens Semikolon, Komma, Tabulator un Pipe. Bi de Tekencode warrt UTF-8 mit un ahn BOM, Windows-1252 un Latin-1 prüft. Excel-Weerte warrt as Weerte inleest; Formeln in Rohdaten warrt nich berekent.
 
-## Beispiel und Tests
+## Bispeel un Tests
 
-`example_input.xlsx` wird mit folgendem Befehl neu erstellt:
+`example_input.xlsx` warrt mit folgen Kommando nee maakt:
 
 ```bash
 python create_example_input.py
 ```
 
-Tests ausführen:
+Tests utföhren:
 
 ```bash
 pytest -q
 ```
 
-Sie prüfen Spaltenerkennung, Gruppierung, 16-Kanal-Aufteilung, Blockkopie samt Style/Merge/Maßen sowie den Schutz vor Überschreiben der Master- und Ausgabedatei.
+Se prüft Spaltenerkennung, Gruppierung, 16-Kanal-Opdeelung, Blockkopie samt Stil/Merge/Maßen as ok den Schutz vör Överschrieven vun de Master- un Utgavedatei.
 
-## Linux-Binary und Windows-EXE erstellen
+## Linux-Binary un Windows-EXE maken
 
-Ein eigenständiges Linux-Programm kann direkt unter Linux gebaut werden:
+Een eegenstännig Linux-Programm kann direkt ünner Linux boot warrn:
 
 ```bash
 source .venv/bin/activate
 pyinstaller --clean --noconfirm SmartStruxure_Beschriftungsgenerator.spec
 ```
 
-Das Linux-Programm liegt dann unter `dist/SmartStruxure_Beschriftungsgenerator`. Tk/Tcl muss vor dem Build korrekt installiert sein, sonst kann PyInstaller die GUI nicht bündeln.
+Dat Linux-Programm liggt denn ünner `dist/SmartStruxure_Beschriftungsgenerator`. Tk/Tcl mutt vör den Build korrekt installiert ween, süss kann PyInstaller de GUI nich bündeln.
 
-PyInstaller erzeugt Programme für das Betriebssystem, auf dem es läuft. Der Linux-Build ist daher **keine Windows-EXE**. Eine native Windows-EXE wird auf Windows gebaut. Das Repository dort auschecken und ausführen:
+PyInstaller maakt Programme för dat Bedriefssystem, op dat dat löppt. De Linux-Build is dorüm **keen Windows-EXE**. Een native Windows-EXE warrt op Windows boot. Dat Repository dor utchecken un utföhren:
 
 ```powershell
 py -3.12 -m venv .venv
@@ -210,19 +210,19 @@ python -m pip install -r requirements.txt
 pyinstaller --clean --noconfirm SmartStruxure_Beschriftungsgenerator.spec
 ```
 
-Die EXE liegt danach unter:
+De EXE liggt denn ünner:
 
 ```text
 dist/SmartStruxure_Beschriftungsgenerator.exe
 ```
 
-Die Spec-Datei bündelt `template_config.json` und – sofern vorhanden – die Mastervorlage. Für später leicht editierbare Konfigurationen kann `template_config.json` zusätzlich neben die EXE gelegt werden; diese externe Datei hat Vorrang. Dasselbe gilt für `templates/Beschriftung SmartStruxure ERR.xlsx` relativ zum EXE-Ordner.
+De Spec-Datei bündelt `template_config.json` un – sofern vörhannen – de Mastervorlage. För later licht editeerbare Konfigurationen kann `template_config.json` zusätzlich neven de EXE leggt warrn; disse externe Datei hett Vörrang. Datülve gellt för `templates/Beschriftung SmartStruxure ERR.xlsx` relativ to’n EXE-Ordner.
 
-Alternativ erzeugt der enthaltene GitHub-Actions-Workflow auf einem Windows-Runner automatisch die `.exe`. Wine-basierte Cross-Builds sind möglich, aber deutlich fehleranfälliger und für dieses Projekt nicht empfohlen.
+Alternativ maakt de enthollene GitHub-Actions-Workflow op een Windows-Runner automaatsch de `.exe`. Wine-basierte Cross-Builds sünd mööglich, aver düütlich fehleranfälliger un för dit Projekt nich empfohlen.
 
-## GitHub-Repository anlegen
+## GitHub-Repository anleggen
 
-Nach dem Prüfen lokaler Dateien:
+Na dat Prüfen vun lokale Dateien:
 
 ```bash
 git init
@@ -233,28 +233,28 @@ git remote add origin https://github.com/DEIN-NAME/SmartStruxureGenerator.git
 git push -u origin main
 ```
 
-Die Referenzdatei kann interne Projektdaten enthalten. Vor einem öffentlichen Push sollte geprüft werden, ob sie veröffentlicht werden darf. Falls nicht, `templates/*.xlsx` zur `.gitignore` hinzufügen und die Vorlage getrennt verteilen.
+De Referenzdatei kann interne Projektdaten hebben. Vör een öffentlichen Push schull prüft warrn, ob se veröffentlicht warrn dröff. Falls nich, `templates/*.xlsx` to de `.gitignore` todoon un de Vorlage trennt verdeelen.
 
 ## Projektstruktur
 
 ```text
 main.py                         Programmeinstieg
-cli.py                          Linux-/Kommandozeilentest ohne GUI
-gui.py                          Tkinter-Oberfläche, Vorschau und Mappingdialog
-excel_reader.py                 CSV-/Excel-Einlesen und Sheet-Auswahl
+cli.py                          Linux-/Kommandozeilentest ahn GUI
+gui.py                          Tkinter-Böverflach, Vörschau un Mappingdialog
+excel_reader.py                 CSV-/Excel-Inlesen un Sheet-Utwahl
 mapping.py                      Alias-Erkennung, Normalisierung, Gruppierung
-template_analyzer.py            Visuelle Analyse und Template-Auswahl
-generator.py                    Blockkopie, Befüllung und Ausgabe
+template_analyzer.py            Visuelle Analyse un Template-Utwahl
+generator.py                    Blockkopie, Füllen un Utgave
 models.py                       Datenmodelle
-config.py                       Pfade, Defaults und Logging
-template_config.json            Korrigierbare fachliche Zellzuordnung
-inspect_template.py             Entwicklerwerkzeug
-create_example_input.py         Erzeugt die Beispiel-Rohdatei
-tests/                          Automatische Kernlogiktests
-SmartStruxure_...spec           PyInstaller-Buildbeschreibung
+config.py                       Pade, Defaults un Logging
+template_config.json            Korrigeerbare fachliche Zelltoordnung
+inspect_template.py             Entwicklerwarktüüch
+create_example_input.py         Maakt de Bispeel-Rohdatei
+tests/                          Automaatsche Kernlogiktests
+SmartStruxure_...spec           PyInstaller-Buildbeschrievung
 ```
 
 ## Bekannte Grenzen
 
-- `openpyxl` bewahrt Zellformatierung, Merges, Maße und normale Excel-Inhalte. Excel-Objekte wie ActiveX-Steuerelemente, manche Zeichnungen oder externe Verbindungen sind nicht Teil der kopierten Kästchenlogik.
-- `.xlsm` wird als Rohdatenquelle unterstützt. Die erzeugte Datei ist absichtlich `.xlsx` und enthält keine Makros.
+- `openpyxl` bewahrt Zellformatierung, Merges, Maßen un normale Excel-Inhalte. Excel-Objekte as ActiveX-Steuerelemente, manche Teknungen oder externe Verbinnungen sünd nich Deel vun de kopeerte Kästchenlogik.
+- `.xlsm` warrt as Rohdatenquelle ünnerstütt. De maakt Datei is mit Afsicht `.xlsx` un hett keen Makros.
