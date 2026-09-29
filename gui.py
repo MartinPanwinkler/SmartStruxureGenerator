@@ -20,7 +20,7 @@ except ImportError:  # GUI bleibt auch ohne optionale Drag-and-drop-Bibliothek s
 
 from config import APP_DATA_DIR, APP_NAME, DEFAULT_CONFIG, DEFAULT_TEMPLATE, load_json_config
 from excel_reader import list_sheets, load_source_file
-from generator import generate_workbook
+from generator import generate_multi_sheet_workbook
 from mapping import detect_columns, normalize_data
 from models import Record, SourceTable
 
@@ -31,6 +31,21 @@ FIELD_LABELS = {
     "asp": "ASP", "module": "Modul", "module_type": "Modultyp", "channel": "Kanal",
     "datapoint": "Datenpunkt", "description": "Beschreibung", "source": "Quelle",
 }
+HEADER_FIELDS = [
+    ("DOKUMENTTITEL", "Dokumenttitel"),
+    ("NETZTEIL_MODUL_1", "Netzteil – Modul 1"),
+    ("NETZTEIL_TEXT_1", "Netzteil – Text 1"),
+    ("NETZTEIL_MODUL_2", "Netzteil – Modul 2"),
+    ("NETZTEIL_TEXT_2", "Netzteil – Text 2"),
+    ("AS_MODUL", "Automation Server – Modul"),
+    ("ANLAGE", "Anlage"),
+    ("AUTOMATION_SERVER", "Automation Server"),
+    ("IP_ADRESSE", "IP-Adresse"),
+    ("SUBNETZMASKE", "Subnetzmaske"),
+    ("AS_VERSION", "AS-Version"),
+    ("BENUTZER", "Benutzer"),
+    ("PASSWORT", "Passwort"),
+]
 
 
 class MappingDialog(tk.Toplevel):
@@ -67,6 +82,70 @@ class MappingDialog(tk.Toplevel):
         self.destroy()
 
 
+class HeaderDataDialog(tk.Toplevel):
+    def __init__(
+        self,
+        parent: tk.Misc,
+        initial_values: dict[str, str] | None = None,
+        initial_image: Path | None = None,
+    ) -> None:
+        super().__init__(parent)
+        self.title("Kopfdaten und Bild")
+        self.resizable(False, False)
+        self.result: tuple[dict[str, str], Path | None] | None = None
+        self.variables: dict[str, tk.StringVar] = {}
+        self.image_var = tk.StringVar(value=str(initial_image or ""))
+        ttk.Label(
+            self,
+            text="Diese Angaben werden für alle ausgewählten Tabellenblätter verwendet.\n"
+                 "Leere Felder bleiben als {{PLATZHALTER}} in Excel erhalten.",
+            justify="left",
+        ).grid(row=0, column=0, columnspan=3, sticky="w", padx=14, pady=(14, 10))
+        values = initial_values or {}
+        for row, (field, label) in enumerate(HEADER_FIELDS, start=1):
+            ttk.Label(self, text=label).grid(row=row, column=0, sticky="w", padx=(14, 8), pady=3)
+            variable = tk.StringVar(value=values.get(field, ""))
+            self.variables[field] = variable
+            ttk.Entry(self, textvariable=variable, width=52, show="*" if field == "PASSWORT" else "").grid(
+                row=row, column=1, columnspan=2, sticky="ew", padx=(0, 14), pady=3
+            )
+        image_row = len(HEADER_FIELDS) + 1
+        ttk.Label(self, text="Bild/Logo").grid(row=image_row, column=0, sticky="w", padx=(14, 8), pady=(10, 3))
+        ttk.Entry(self, textvariable=self.image_var, width=42).grid(row=image_row, column=1, sticky="ew", pady=(10, 3))
+        ttk.Button(self, text="Bild auswählen", command=self._choose_image).grid(
+            row=image_row, column=2, padx=(8, 14), pady=(10, 3)
+        )
+        buttons = ttk.Frame(self)
+        buttons.grid(row=image_row + 1, column=0, columnspan=3, pady=14)
+        ttk.Button(buttons, text="Übernehmen", command=self._accept).pack(side="left", padx=5)
+        ttk.Button(buttons, text="Mit Platzhaltern fortfahren", command=self._skip).pack(side="left", padx=5)
+        ttk.Button(buttons, text="Abbrechen", command=self.destroy).pack(side="left", padx=5)
+        self.transient(parent)
+        self.grab_set()
+
+    def _choose_image(self) -> None:
+        value = filedialog.askopenfilename(
+            parent=self,
+            filetypes=[("Bilddateien", "*.png *.jpg *.jpeg *.bmp *.gif"), ("Alle Dateien", "*.*")],
+        )
+        if value:
+            self.image_var.set(value)
+
+    def _accept(self) -> None:
+        image_value = self.image_var.get().strip()
+        image_path = Path(image_value) if image_value else None
+        if image_path is not None and not image_path.is_file():
+            messagebox.showerror("Fehler", "Die ausgewählte Bilddatei wurde nicht gefunden.", parent=self)
+            return
+        values = {field: variable.get().strip() for field, variable in self.variables.items() if variable.get().strip()}
+        self.result = (values, image_path)
+        self.destroy()
+
+    def _skip(self) -> None:
+        self.result = ({}, None)
+        self.destroy()
+
+
 class SmartStruxureApp(ttk.Frame):
     def __init__(self, master: tk.Tk) -> None:
         super().__init__(master, padding=12)
@@ -79,13 +158,15 @@ class SmartStruxureApp(ttk.Frame):
         self.progress_var = tk.IntVar()
         self.source_table: SourceTable | None = None
         self.column_mapping: dict[str, str] = {}
+        self.header_values: dict[str, str] = {}
+        self.header_image: Path | None = None
         self.profiles_path = APP_DATA_DIR / "mapping_profiles.json"
         self._build()
 
     def _build(self) -> None:
         self.pack(fill="both", expand=True)
         self.master.title(APP_NAME)
-        self.master.geometry("980x650")
+        self.master.geometry("980x720")
         self.master.minsize(800, 520)
         for row, (label, variable, command, button) in enumerate([
             ("Rohdatei", self.source_var, self.choose_source, "Rohdatei auswählen"),
@@ -110,11 +191,20 @@ class SmartStruxureApp(ttk.Frame):
         )
         self.drop_label.grid(row=3, column=0, columnspan=3, sticky="ew", pady=(8, 10))
         self._configure_drag_drop()
-        ttk.Label(self, text="Tabellenblatt").grid(row=4, column=0, sticky="w", pady=4)
-        self.sheet_box = ttk.Combobox(self, textvariable=self.sheet_var, state="readonly")
-        self.sheet_box.grid(row=4, column=1, sticky="ew", padx=8)
-        self.sheet_box.bind("<<ComboboxSelected>>", lambda _: self.load_source())
-        ttk.Button(self, text="Zuordnung (nur Fremdformat)", command=self.configure_mapping).grid(row=4, column=2, sticky="ew")
+        ttk.Label(self, text="Tabellenblätter").grid(row=4, column=0, sticky="nw", pady=4)
+        sheet_frame = ttk.Frame(self)
+        sheet_frame.grid(row=4, column=1, sticky="ew", padx=8)
+        self.sheet_list = tk.Listbox(sheet_frame, selectmode="extended", exportselection=False, height=4)
+        self.sheet_list.pack(side="left", fill="x", expand=True)
+        sheet_scroll = ttk.Scrollbar(sheet_frame, orient="vertical", command=self.sheet_list.yview)
+        sheet_scroll.pack(side="right", fill="y")
+        self.sheet_list.configure(yscrollcommand=sheet_scroll.set)
+        self.sheet_list.bind("<<ListboxSelect>>", lambda _event: self.load_selected_preview())
+        sheet_buttons = ttk.Frame(self)
+        sheet_buttons.grid(row=4, column=2, sticky="nsew")
+        ttk.Button(sheet_buttons, text="Alle auswählen", command=self._select_all_sheets).pack(fill="x", pady=(0, 3))
+        ttk.Button(sheet_buttons, text="Nur *_DP", command=self._select_dp_sheets).pack(fill="x", pady=3)
+        ttk.Button(sheet_buttons, text="Zuordnung (Fremdformat)", command=self.configure_mapping).pack(fill="x", pady=(3, 0))
         self.preview = ttk.Treeview(self, show="headings", height=16)
         self.preview.grid(row=5, column=0, columnspan=3, sticky="nsew", pady=(12, 6))
         preview_scroll = ttk.Scrollbar(self, orient="horizontal", command=self.preview.xview)
@@ -167,10 +257,8 @@ class SmartStruxureApp(ttk.Frame):
         self.output_var.set(str(path.with_name(f"{path.stem}_Beschriftung.xlsx")))
         try:
             sheets = list_sheets(path)
-            self.sheet_box["values"] = sheets
-            preferred = next((name for name in sheets if "_DP" in name.upper()), sheets[0] if sheets else "")
-            self.sheet_var.set(preferred)
-            self.load_source()
+            self._set_sheet_choices(sheets)
+            self.load_selected_preview()
             self.drop_label.configure(text=f"Geladen: {path.name}")
         except Exception as exc:
             self._error(exc)
@@ -185,13 +273,47 @@ class SmartStruxureApp(ttk.Frame):
         if value:
             self.output_var.set(value)
 
-    def load_source(self) -> None:
-        self.source_table = load_source_file(Path(self.source_var.get()), self.sheet_var.get() or None)
+    def _set_sheet_choices(self, sheets: list[str]) -> None:
+        self.sheet_list.delete(0, "end")
+        if not sheets:
+            self.sheet_list.insert("end", "CSV-Datei")
+            self.sheet_list.selection_set(0)
+            return
+        for sheet in sheets:
+            self.sheet_list.insert("end", sheet)
+        self._select_dp_sheets()
+
+    def _select_all_sheets(self) -> None:
+        self.sheet_list.selection_set(0, "end")
+        self.load_selected_preview()
+
+    def _select_dp_sheets(self) -> None:
+        self.sheet_list.selection_clear(0, "end")
+        matches = [index for index in range(self.sheet_list.size()) if "_DP" in self.sheet_list.get(index).upper()]
+        for index in matches or ([0] if self.sheet_list.size() else []):
+            self.sheet_list.selection_set(index)
+        self.load_selected_preview()
+
+    def _selected_sheets(self) -> list[str | None]:
+        if Path(self.source_var.get()).suffix.lower() == ".csv":
+            return [None]
+        return [self.sheet_list.get(index) for index in self.sheet_list.curselection()]
+
+    def load_selected_preview(self) -> None:
+        selected = self._selected_sheets()
+        if not selected or not self.source_var.get():
+            return
+        sheet_name = selected[0]
+        self.sheet_var.set(sheet_name or "")
+        self.source_table = load_source_file(Path(self.source_var.get()), sheet_name)
         self.column_mapping = self._load_mapping_profile(self.source_table.headers) or detect_columns(self.source_table.headers)
         self._show_preview(self.source_table)
         missing = [FIELD_LABELS[field] for field in REQUIRED_FIELDS if field not in self.column_mapping]
         suffix = f" Nicht erkannt: {', '.join(missing)}." if missing else " Spalten automatisch erkannt."
-        self.status_var.set(f"Datei geladen. {len(self.source_table.rows)} Datensätze erkannt.{suffix}")
+        self.status_var.set(
+            f"{len(selected)} Tabellenblatt/-blätter ausgewählt. "
+            f"Vorschau: {len(self.source_table.rows)} Datensätze.{suffix}"
+        )
 
     def _show_preview(self, table: SourceTable) -> None:
         self.preview.delete(*self.preview.get_children())
@@ -243,11 +365,10 @@ class SmartStruxureApp(ttk.Frame):
         if not self.source_table:
             messagebox.showerror("Fehler", "Bitte zuerst eine Rohdatei laden.")
             return
-        missing = [field for field in ("channel", "datapoint") if field not in self.column_mapping]
-        if missing:
-            self.configure_mapping()
-            if any(field not in self.column_mapping for field in missing):
-                return
+        selected_sheets = self._selected_sheets()
+        if not selected_sheets:
+            messagebox.showerror("Fehler", "Bitte mindestens ein Tabellenblatt auswählen.")
+            return
         master = Path(self.template_var.get())
         output = Path(self.output_var.get())
         if not self.template_var.get().strip():
@@ -273,22 +394,60 @@ class SmartStruxureApp(ttk.Frame):
         except OSError as exc:
             self._error(exc)
             return
-        records = normalize_data(self.source_table.rows, self.column_mapping)
+        datasets: list[tuple[str, list[Record]]] = []
+        try:
+            for sheet_name in selected_sheets:
+                table = load_source_file(Path(self.source_var.get()), sheet_name)
+                if self.source_table is not None and table.headers == self.source_table.headers:
+                    mapping = dict(self.column_mapping)
+                else:
+                    mapping = self._load_mapping_profile(table.headers) or detect_columns(table.headers)
+                missing = [field for field in ("module", "module_type", "channel", "description") if field not in mapping]
+                if missing:
+                    shown_name = sheet_name or "CSV-Datei"
+                    raise ValueError(
+                        f"Tabellenblatt '{shown_name}': Felder nicht automatisch erkannt: {', '.join(missing)}"
+                    )
+                datasets.append((sheet_name or Path(self.source_var.get()).stem, normalize_data(table.rows, mapping)))
+        except Exception as exc:
+            self._error(exc)
+            return
+        header_dialog = HeaderDataDialog(self, self.header_values, self.header_image)
+        self.wait_window(header_dialog)
+        if header_dialog.result is None:
+            return
+        self.header_values, self.header_image = header_dialog.result
         self.generate_button.configure(state="disabled")
         self.progress_var.set(0)
         threading.Thread(
             target=self._generate,
-            args=(master, output, records, replace_existing),
+            args=(master, output, datasets, replace_existing, self.header_values, self.header_image),
             daemon=True,
         ).start()
 
-    def _generate(self, master: Path, output: Path, records: list[Record], replace_existing: bool) -> None:
+    def _generate(
+        self,
+        master: Path,
+        output: Path,
+        datasets: list[tuple[str, list[Record]]],
+        replace_existing: bool,
+        header_values: dict[str, str],
+        header_image: Path | None,
+    ) -> None:
         generated_path = output
         if replace_existing:
             generated_path = output.with_name(f".{output.stem}.{uuid.uuid4().hex}.tmp.xlsx")
         try:
             config = load_json_config(DEFAULT_CONFIG)
-            result = generate_workbook(master, generated_path, records, config, self._progress)
+            result = generate_multi_sheet_workbook(
+                master,
+                generated_path,
+                datasets,
+                config,
+                header_values=header_values,
+                header_image=header_image,
+                progress=self._progress,
+            )
             if replace_existing:
                 os.replace(generated_path, output)
                 result.output_path = output.resolve()

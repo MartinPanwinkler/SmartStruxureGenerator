@@ -8,6 +8,7 @@
     "sheet": "ASP-301-1",
     "range": "A1:N25",
     "row_spacing_after": 1,
+    "image_anchors": ["J6"],
     "cell_values": {
       "A1": "{{DOKUMENTTITEL}}",
       "E4": "{{NETZTEIL_MODUL_1}}",

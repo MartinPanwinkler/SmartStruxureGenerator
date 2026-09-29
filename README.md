@@ -48,6 +48,8 @@ Vor den I/O-Kästchen wird der Originalbereich `A1:N25` vollständig kopiert. Er
 
 Die Platzhalter bleiben normale Excel-Zelltexte und können nach der Generierung manuell überschrieben werden. Ihre Positionen stehen zentral unter `document_header.cell_values` in `template_config.json`.
 
+Das optionale Bildziel steht unter `document_header.image_anchors`. Standardmäßig wird das Bild proportional in das verbundene Feld `J6:K8` eingepasst.
+
 ## Installation für Entwickler
 
 Empfohlen ist Python 3.11 oder 3.12. Unter Linux:
@@ -113,12 +115,12 @@ Anschließend `linux_test.xlsx` mit LibreOffice Calc oder Microsoft Excel öffne
 
 ## Benutzung
 
-1. Rohdatei auswählen. Bei Excel-Dateien kann anschließend das Tabellenblatt gewählt werden.
-   Alternativ die `.xlsx`-, `.xlsm`- oder `.csv`-Datei auf das Drag-and-drop-Feld ziehen.
-2. Master-Vorlage auswählen.
-3. Ausgabepfad festlegen. Eine vorhandene Datei wird aus Sicherheitsgründen nicht überschrieben.
-4. Die Vorschau und automatische Spaltenerkennung prüfen. Fehlende oder falsche Felder über **Spalten zuordnen** korrigieren. Die Zuordnung kann für dieselbe Spaltenstruktur gespeichert werden.
-5. **Beschriftung generieren** wählen.
+1. Rohdatei auswählen oder die `.xlsx`-, `.xlsm`- oder `.csv`-Datei auf das Drag-and-drop-Feld ziehen.
+2. In der Tabellenblattliste ein oder mehrere Blätter markieren. **Alle auswählen** markiert sämtliche Blätter, **Nur *_DP** wählt die üblichen SmartStruxure-Datenblätter.
+3. Master-Vorlage und Ausgabepfad prüfen. Eine vorhandene Datei wird nur nach Rückfrage ersetzt.
+4. Die Vorschau und automatische Spaltenerkennung prüfen. Abweichende Formate können über **Spalten zuordnen** konfiguriert werden.
+5. **Beschriftung generieren** wählen. Im folgenden Dialog können die Kopfdaten einmalig für alle ausgewählten Blätter eingegeben und optional ein Bild ausgewählt werden. Leere Felder bleiben als Excel-Platzhalter erhalten.
+6. Alle ausgewählten Quellen werden als getrennte, formatierte Blätter in derselben Ausgabedatei gespeichert.
 
 Die Logdatei liegt unter `logs/app.log`. Die Masterdatei wird nur gelesen und nie gespeichert.
 

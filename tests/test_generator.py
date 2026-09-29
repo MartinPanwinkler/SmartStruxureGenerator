@@ -3,8 +3,9 @@ from pathlib import Path
 import pytest
 from openpyxl import Workbook, load_workbook
 from openpyxl.styles import Border, Font, PatternFill, Side
+from PIL import Image
 
-from generator import generate_workbook
+from generator import generate_multi_sheet_workbook, generate_workbook
 from models import Record
 
 
@@ -122,4 +123,49 @@ def test_document_header_is_copied_with_editable_placeholders(tmp_path: Path) ->
     assert sheet["A1"].value == "{{DOKUMENTTITEL}}"
     assert "A1:D1" in {str(item) for item in sheet.merged_cells.ranges}
     assert sheet["A3"].value == "ASP-1 DI"
+    book.close()
+
+
+def test_multiple_source_sheets_create_multiple_output_sheets(tmp_path: Path) -> None:
+    master = tmp_path / "master.xlsx"
+    output = tmp_path / "multi.xlsx"
+    make_master(master)
+    datasets = [
+        ("ASP-A_DP", [Record(asp="ASP-A", module="M1", module_type="DI", channel="01")]),
+        ("ASP-B_DP", [Record(asp="ASP-B", module="M2", module_type="DI", channel="01")]),
+    ]
+    result = generate_multi_sheet_workbook(master, output, datasets, configuration())
+    book = load_workbook(output)
+    assert book.sheetnames == ["ASP-A", "ASP-B"]
+    assert result.boxes_created == 2
+    assert result.records_processed == 2
+    book.close()
+
+
+def test_header_values_and_image_are_applied(tmp_path: Path) -> None:
+    master = tmp_path / "master.xlsx"
+    output = tmp_path / "header-image.xlsx"
+    image_path = tmp_path / "logo.png"
+    make_master(master)
+    Image.new("RGB", (120, 60), "blue").save(image_path)
+    config = configuration()
+    config["document_header"] = {
+        "sheet": "Master",
+        "range": "A1:D1",
+        "row_spacing_after": 1,
+        "cell_values": {"A1": "{{DOKUMENTTITEL}}"},
+        "image_anchors": ["A1"],
+    }
+    generate_multi_sheet_workbook(
+        master,
+        output,
+        [("ASP-A_DP", [Record(asp="ASP-A", module="M1", module_type="DI")])],
+        config,
+        header_values={"DOKUMENTTITEL": "Projekt A"},
+        header_image=image_path,
+    )
+    book = load_workbook(output)
+    sheet = book["ASP-A"]
+    assert sheet["A1"].value == "Projekt A"
+    assert len(sheet._images) == 1
     book.close()
